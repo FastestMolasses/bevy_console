@@ -12,16 +12,16 @@ pub use crate::console::{
     AddConsoleCommand, Command, ConsoleCommand, ConsoleCommandEntered, ConsoleConfiguration,
     ConsoleOpen, NamedCommand, PrintConsoleLine, ToggleConsoleKey,
 };
-// pub use color::{Style, StyledStr};
 
-use crate::console::{console_ui, receive_console_line, ConsoleState};
+use crate::console::{receive_console_line, ConsoleState};
+use crate::ui::console_ui;
 
-// mod color;
 mod commands;
 mod console;
+mod ui;
 mod macros;
 
-/// Console plugin.
+/// Console plugin
 pub struct ConsolePlugin;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
