@@ -3,7 +3,7 @@ use crate::{
 };
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
-use bevy_egui::egui::{self, Align, Frame, ScrollArea, TextEdit};
+use bevy_egui::egui::{self, Align, ScrollArea, TextEdit};
 use bevy_egui::egui::{text::LayoutJob, text_edit::CCursorRange};
 use bevy_egui::egui::{Context, Id};
 use bevy_egui::{
@@ -42,7 +42,7 @@ pub(crate) fn console_ui(
             .default_size([config.width, config.height])
             .resizable(false)
             .title_bar(false)
-            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(60)))
+            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(240)))
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
                     let scroll_height = ui.available_height() - 30.0;
@@ -58,9 +58,9 @@ pub(crate) fn console_ui(
                                     let mut text = LayoutJob::default();
 
                                     text.append(
-                                        &line.to_string(), //TOOD: once clap supports custom styling use it here
+                                        &line.to_string(),
                                         0f32,
-                                        TextFormat::simple(FontId::monospace(14f32), Color32::GRAY),
+                                        TextFormat::simple(FontId::monospace(14f32), Color32::WHITE),
                                     );
 
                                     ui.label(text);
