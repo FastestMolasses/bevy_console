@@ -180,6 +180,7 @@ unsafe impl<T: Command> SystemParam for ConsoleCommand<'_, T> {
         }
     }
 }
+
 /// Parsed raw console command into `command` and `args`.
 #[derive(Clone, Debug, Event)]
 pub struct ConsoleCommandEntered {
@@ -341,18 +342,19 @@ pub(crate) fn console_ui(
         .iter()
         .any(|code| console_key_pressed(code, &config.keys));
 
-    // always close if console open
-    // avoid opening console if typing in another text input
+    // Always close if console open
+    // Avoid opening console if typing in another text input
     if pressed && (console_open.open || !ctx.wants_keyboard_input()) {
         console_open.open = !console_open.open;
     }
 
     if console_open.open {
-        egui::Window::new("Console")
+        egui::Window::new("console")
             .collapsible(false)
             .default_pos([config.left_pos, config.top_pos])
             .default_size([config.width, config.height])
-            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(77)))
+            .title_bar(false)
+            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(60)))
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
                     let scroll_height = ui.available_height() - 30.0;
@@ -420,6 +422,7 @@ pub(crate) fn console_ui(
                                     command_entered
                                         .send(ConsoleCommandEntered { command_name, args });
                                 } else {
+                                    // TODO: IF COMMAND IS NOT RECOGNIZED, CHECK IF IT'S SETTING A VARIABLE
                                     debug!(
                                         "Command not recognized, recognized commands: `{:?}`",
                                         config.commands.keys().collect::<Vec<_>>()

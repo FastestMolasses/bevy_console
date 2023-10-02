@@ -1,8 +1,8 @@
 [package]
 name = "bevy_console"
-version = "0.8.0"
+version = "0.1.0"
 edition = "2021"
-authors = ["RichoDemus <git@richodemus.com>"]
+authors = ["Abe M", "RichoDemus <git@richodemus.com>"]
 homepage = "https://github.com/RichoDemus/bevy-console"
 repository = "https://github.com/RichoDemus/bevy-console"
 description = "dev console for bevy"
@@ -10,14 +10,14 @@ license = "MIT"
 readme = "README.md"
 
 [dependencies]
-bevy = { version = "0.11", default-features = false }
-clap = { version = "=4.1.10", features = ["derive"]}
+bevy = { version = "0.11.3", default-features = false }
+clap = { version = "4.4.6", features = ["derive"]}
 bevy_console_derive = { path = "./bevy_console_derive", version = "0.5.0" }
 bevy_egui = "0.21"
-shlex = "1.1"
+shlex = "1.2.0"
 
 [dev-dependencies]
-bevy = "0.11"
+bevy = "0.11.3"
 
 [workspace]
 members = ["bevy_console_derive"]
