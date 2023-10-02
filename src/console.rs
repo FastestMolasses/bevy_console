@@ -237,13 +237,13 @@ impl Default for ConsoleConfiguration {
     fn default() -> Self {
         Self {
             keys: vec![ToggleConsoleKey::KeyCode(KeyCode::Grave)],
-            left_pos: 200.0,
-            top_pos: 100.0,
+            left_pos: 0.0,
+            top_pos: 0.0,
             height: 400.0,
             width: 800.0,
             commands: BTreeMap::new(),
-            history_size: 20,
-            symbol: "$ ".to_owned(),
+            history_size: 50,
+            symbol: "> ".to_owned(),
         }
     }
 }
@@ -352,7 +352,7 @@ pub(crate) fn console_ui(
             .collapsible(false)
             .default_pos([config.left_pos, config.top_pos])
             .default_size([config.width, config.height])
-            .resizable(true)
+            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(77)))
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
                     let scroll_height = ui.available_height() - 30.0;
