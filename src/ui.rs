@@ -22,7 +22,7 @@ pub(crate) fn console_ui(
     mut command_entered: EventWriter<ConsoleCommandEntered>,
     mut console_open: ResMut<ConsoleOpen>,
 ) {
-    let keyboard_input_events = keyboard_input_events.iter().collect::<Vec<_>>();
+    let keyboard_input_events = keyboard_input_events.read().collect::<Vec<_>>();
     let ctx = egui_context.ctx_mut();
 
     let pressed = keyboard_input_events
