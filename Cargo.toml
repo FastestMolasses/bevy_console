@@ -1,6 +1,6 @@
 [package]
 name = "bevy_console"
-version = "0.1.0"
+version = "0.9.0"
 edition = "2021"
 authors = ["Abe M", "RichoDemus <git@richodemus.com>"]
 homepage = "https://github.com/RichoDemus/bevy-console"
