@@ -35,136 +35,136 @@ pub(crate) fn console_ui(
         console_open.open = !console_open.open;
     }
 
-    if console_open.open {
-        egui::Window::new("console")
-            .collapsible(false)
-            .fixed_pos([config.left_pos, config.top_pos])
-            .default_size([config.width, config.height])
-            .resizable(false)
-            .title_bar(false)
-            .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(240)))
-            .show(ctx, |ui| {
-                ui.vertical(|ui| {
-                    let scroll_height = ui.available_height() - 30.0;
+    if !console_open.open {
+        return;
+    }
 
-                    // Scroll area
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
-                        .stick_to_bottom(true)
-                        .max_height(scroll_height)
-                        .show(ui, |ui| {
-                            ui.vertical(|ui| {
-                                for line in &state.scrollback {
-                                    let mut text = LayoutJob::default();
+    egui::Window::new("console")
+        .fixed_pos([config.left_pos, config.top_pos])
+        .default_size([config.width, config.height])
+        .collapsible(config.collapsible)
+        .resizable(config.resizable)
+        .title_bar(config.title_bar)
+        .frame(egui::Frame::none().fill(egui::Color32::from_black_alpha(240)))
+        .show(ctx, |ui| {
+            ui.vertical(|ui| {
+                let scroll_height = ui.available_height() - 30.0;
 
-                                    text.append(
-                                        &line.to_string(),
-                                        0f32,
-                                        TextFormat::simple(FontId::monospace(14f32), Color32::WHITE),
-                                    );
+                // Scroll area
+                ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .stick_to_bottom(true)
+                    .max_height(scroll_height)
+                    .show(ui, |ui| {
+                        ui.vertical(|ui| {
+                            for line in &state.scrollback {
+                                let mut text = LayoutJob::default();
 
-                                    ui.label(text);
-                                }
-                            });
+                                text.append(
+                                    &line.to_string(),
+                                    0f32,
+                                    TextFormat::simple(FontId::monospace(14f32), Color32::WHITE),
+                                );
 
-                            // Scroll to bottom if console just opened
-                            if console_open.is_changed() {
-                                ui.scroll_to_cursor(Some(Align::BOTTOM));
+                                ui.label(text);
                             }
                         });
 
-                    // Separator
-                    ui.separator();
-
-                    // Input
-                    let text_edit = TextEdit::singleline(&mut state.buf)
-                        .desired_width(f32::INFINITY)
-                        .lock_focus(true)
-                        .frame(false)
-                        .font(egui::TextStyle::Monospace);
-
-                    // Handle enter
-                    let text_edit_response = ui.add(text_edit);
-                    if text_edit_response.lost_focus()
-                        && ui.input(|i| i.key_pressed(egui::Key::Enter))
-                    {
-                        if state.buf.trim().is_empty() {
-                            state.scrollback.push(StyledStr::new());
-                        } else {
-                            let msg = format!("{}{}", config.symbol, state.buf);
-                            state.scrollback.push(msg.into());
-                            let cmd_string = state.buf.clone();
-                            state.history.insert(1, cmd_string.into());
-                            if state.history.len() > config.history_size + 1 {
-                                state.history.pop_back();
-                            }
-
-                            let mut args = Shlex::new(&state.buf).collect::<Vec<_>>();
-
-                            if !args.is_empty() {
-                                let command_name = args.remove(0);
-                                debug!("Command entered: `{command_name}`, with args: `{args:?}`");
-
-                                let command = config.commands.get(command_name.as_str());
-
-                                if command.is_some() {
-                                    command_entered
-                                        .send(ConsoleCommandEntered { command_name, args });
-                                } else {
-                                    // TODO: IF COMMAND IS NOT RECOGNIZED, CHECK IF IT'S SETTING A VARIABLE
-                                    debug!(
-                                        "Command not recognized, recognized commands: `{:?}`",
-                                        config.commands.keys().collect::<Vec<_>>()
-                                    );
-
-                                    state.scrollback.push("error: Invalid command".into());
-                                }
-                            }
-
-                            state.buf.clear();
+                        // Scroll to bottom if console just opened
+                        if console_open.is_changed() {
+                            ui.scroll_to_cursor(Some(Align::BOTTOM));
                         }
-                    }
+                    });
 
-                    // Clear on ctrl+l
-                    if keyboard_input_events
-                        .iter()
-                        .any(|&k| k.state.is_pressed() && k.key_code == Some(KeyCode::L))
-                        && (keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]))
-                    {
-                        state.scrollback.clear();
-                    }
+                // Separator
+                ui.separator();
 
-                    // Handle up and down through history
-                    if text_edit_response.has_focus()
-                        && ui.input(|i| i.key_pressed(egui::Key::ArrowUp))
-                        && state.history.len() > 1
-                        && state.history_index < state.history.len() - 1
-                    {
-                        if state.history_index == 0 && !state.buf.trim().is_empty() {
-                            *state.history.get_mut(0).unwrap() = state.buf.clone().into();
+                // Input
+                let text_edit = TextEdit::singleline(&mut state.buf)
+                    .desired_width(f32::INFINITY)
+                    .lock_focus(true)
+                    .frame(false)
+                    .font(egui::TextStyle::Monospace);
+
+                // Handle enter
+                let text_edit_response = ui.add(text_edit);
+                if text_edit_response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))
+                {
+                    if state.buf.trim().is_empty() {
+                        state.scrollback.push(StyledStr::new());
+                    } else {
+                        let msg = format!("{}{}", config.symbol, state.buf);
+                        state.scrollback.push(msg.into());
+                        let cmd_string = state.buf.clone();
+                        state.history.insert(1, cmd_string.into());
+                        if state.history.len() > config.history_size + 1 {
+                            state.history.pop_back();
                         }
 
-                        state.history_index += 1;
-                        let previous_item = state.history.get(state.history_index).unwrap().clone();
-                        state.buf = previous_item.to_string();
+                        let mut args = Shlex::new(&state.buf).collect::<Vec<_>>();
 
-                        set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
-                    } else if text_edit_response.has_focus()
-                        && ui.input(|i| i.key_pressed(egui::Key::ArrowDown))
-                        && state.history_index > 0
-                    {
-                        state.history_index -= 1;
-                        let next_item = state.history.get(state.history_index).unwrap().clone();
-                        state.buf = next_item.to_string();
+                        if !args.is_empty() {
+                            let command_name = args.remove(0);
+                            debug!("Command entered: `{command_name}`, with args: `{args:?}`");
 
-                        set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                            let command = config.commands.get(command_name.as_str());
+
+                            if command.is_some() {
+                                command_entered.send(ConsoleCommandEntered { command_name, args });
+                            } else {
+                                // TODO: IF COMMAND IS NOT RECOGNIZED, CHECK IF IT'S SETTING A VARIABLE
+                                debug!(
+                                    "Command not recognized, recognized commands: `{:?}`",
+                                    config.commands.keys().collect::<Vec<_>>()
+                                );
+
+                                state.scrollback.push("error: Invalid command".into());
+                            }
+                        }
+
+                        state.buf.clear();
+                    }
+                }
+
+                // Clear on ctrl+l
+                if keyboard_input_events
+                    .iter()
+                    .any(|&k| k.state.is_pressed() && k.key_code == Some(KeyCode::L))
+                    && (keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]))
+                {
+                    state.scrollback.clear();
+                }
+
+                // Handle up and down through history
+                if text_edit_response.has_focus()
+                    && ui.input(|i| i.key_pressed(egui::Key::ArrowUp))
+                    && state.history.len() > 1
+                    && state.history_index < state.history.len() - 1
+                {
+                    if state.history_index == 0 && !state.buf.trim().is_empty() {
+                        *state.history.get_mut(0).unwrap() = state.buf.clone().into();
                     }
 
-                    // Focus on input
-                    ui.memory_mut(|m| m.request_focus(text_edit_response.id));
-                });
+                    state.history_index += 1;
+                    let previous_item = state.history.get(state.history_index).unwrap().clone();
+                    state.buf = previous_item.to_string();
+
+                    set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                } else if text_edit_response.has_focus()
+                    && ui.input(|i| i.key_pressed(egui::Key::ArrowDown))
+                    && state.history_index > 0
+                {
+                    state.history_index -= 1;
+                    let next_item = state.history.get(state.history_index).unwrap().clone();
+                    state.buf = next_item.to_string();
+
+                    set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                }
+
+                // Focus on input
+                ui.memory_mut(|m| m.request_focus(text_edit_response.id));
             });
-    }
+        });
 }
 
 fn console_key_pressed(

@@ -218,6 +218,12 @@ pub struct ConsoleConfiguration {
     pub height: f32,
     /// Console width
     pub width: f32,
+    /// Console resizable
+    pub resizable: bool,
+    /// Console title bar
+    pub title_bar: bool,
+    /// Console collapsible
+    pub collapsible: bool,
     /// Registered console commands
     pub commands: BTreeMap<&'static str, clap::Command>,
     /// Number of commands to store in history
@@ -234,6 +240,9 @@ impl Default for ConsoleConfiguration {
             top_pos: 0.0,
             height: 400.0,
             width: 800.0,
+            resizable: false,
+            title_bar: false,
+            collapsible: false,
             commands: BTreeMap::new(),
             history_size: 50,
             symbol: "> ".to_owned(),
